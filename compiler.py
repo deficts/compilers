@@ -128,11 +128,21 @@ def p_error(p):
 
 parser = yacc.yacc()
 
-while True:
+# Console program
+''' while True:
     try:
         s = input('calc > ')
     except EOFError:
         break
     if not s:
         continue
-    yacc.parse(s)
+    yacc.parse(s) '''
+
+# File input
+lines = []
+with open('test.txt') as file:
+    lines = file.readlines()
+
+for line in lines:
+    yacc.parse(line)
+print('Compiled successfully')
