@@ -1,4 +1,9 @@
-float b
-int a
-a = 5
-b = a + 3.2
+int entero = 10;
+float flotante = 5.5;
+bool booleano = 0;
+string cadena = "hola";
+
+print(entero);
+print(flotante);
+print(booleano);
+print(cadena);
