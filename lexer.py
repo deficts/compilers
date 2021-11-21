@@ -1,9 +1,9 @@
 import ply.lex as lex
 
-reserved = ('IF', 'ELSE', 'WHILE', 'PRINT',
-            'ANDALSO', 'ORELSE', 'NOT')
+reserved = {'if': 'IF', 'else': 'ELSE', 'while': 'WHILE', 'print': 'PRINT',
+            'and': 'AND', 'or': 'OR', 'not': 'NOT', 'int': 'INTDECL', 'float': 'FLOATDECL', 'boolean': 'BOOLDECL', 'string': 'STRINGDECL'}
 
-tokens = reserved + (
+tokens = list(reserved.values()) + [
     'ID',
     'GREATER',
     'GREATEREQUAL',
@@ -13,7 +13,6 @@ tokens = reserved + (
     'LESSTHAN',
     'MINUS',
     'PLUS',
-    'INTDIV',
     'DIV',
     'MUL',
     'LPAREN',
@@ -26,7 +25,7 @@ tokens = reserved + (
     'BOOL',
     'SEMI',
     'ASSIGN',
-)
+]
 
 t_ASSIGN = r'='
 t_GREATER = r'>'
@@ -37,7 +36,6 @@ t_LESSEQUAL = r'<='
 t_LESSTHAN = r'<'
 t_MINUS = r'-'
 t_PLUS = r'\+'
-t_INTDIV = r'div'
 t_DIV = r'/'
 t_MUL = r'\*'
 t_LCURLY = r'\{'
@@ -47,42 +45,48 @@ t_RPAREN = r'\)'
 t_SEMI = r';'
 t_ignore = ' \t'
 
-
 def t_FLOAT(t):
     r'[-+]?[0-9]+(\.([0-9]+)?([eE][-+]?[0-9]+)?|[eE][-+]?[0-9]+)'
     t.value = float(t.value)
     return t
 
-
 def t_INT(t):
     r'[0-9]+'
-    #r'[-+]?[0-9]+'
+    # r'[-+]?[0-9]+'
     t.value = int(t.value)
     return t
 
 def t_STRING(t):
-     r'(\"([^\"]|(\\.))*\")|((\'([^\"]|(\\.))*\'))'
-     return t
+    r'(\"([^\"]|(\\.))*\")|((\'([^\"]|(\\.))*\'))'
+    return t
 
 def t_BOOL(t):
     r'True|False'
-    return t;
+    return t
 
 def t_newline(t):
     r'\n+'
     t.lexer.lineno += len(t.value)
 
 reserved_map = {}
-for r in reserved:
-    reserved_map[r.lower()] = r
+for r in list(reserved.values()):
+    if(r == 'INTDECL'):
+        reserved_map['int'] = r
+    elif(r == 'FLOATDECL'):
+        reserved_map['float'] = r
+    elif(r == 'BOOLDECL'):
+        reserved_map['bool'] = r
+    elif(r == 'STRINGDECL'):
+        reserved_map['string'] = r
+    else:
+        reserved_map[r.lower()] = r
 
 def t_ID(t):
     r'[a-zA-Z][a-zA-Z0-9_]*'
     t.type = reserved_map.get(t.value, "ID")
     return t
-    
+
 def t_error(t):
-    error_syntax = 1;
-    return
+    raise(Exception('Error', t));
 
 lex.lex()
