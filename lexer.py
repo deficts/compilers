@@ -1,7 +1,7 @@
 import ply.lex as lex
 
 reserved = ('IF', 'ELSE', 'WHILE', 'PRINT',
-            'ANDALSO', 'ORELSE', 'NOT', 'IN')
+            'ANDALSO', 'ORELSE', 'NOT')
 
 tokens = reserved + (
     'ID',
@@ -25,12 +25,10 @@ tokens = reserved + (
     'STRING',
     'BOOL',
     'SEMI',
-    'COMMA',
     'ASSIGN',
 )
 
 t_ASSIGN = r'='
-t_COMMA = r','
 t_GREATER = r'>'
 t_GREATEREQUAL = r'>='
 t_NOTEQUAL = r'<>'
@@ -87,3 +85,4 @@ def t_error(t):
     error_syntax = 1;
     return
 
+lex.lex()
