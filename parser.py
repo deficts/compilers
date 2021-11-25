@@ -170,3 +170,10 @@ def p_error(p):
 parser = yacc.yacc()
 resNode = parser.parse(lexer=lexer, input=open("test.txt").read())
 print("Compiled succesfully")
+
+generator = TacGenerator()
+generator.gen_tac(resNode)
+f = open('out.txt', 'w')
+f.write(generator.tac_str)
+f.close()
+print("Output saved on out.txt")
