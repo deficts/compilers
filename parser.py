@@ -1,155 +1,172 @@
 import ply.yacc as yacc
 from lexer import *
+from node import Node
+from tac_generator import TacGenerator
 
-variables = {}
-stack = [True]
+def p_block(p):
+	'''block : stmt block
+			 | stmt
+			 | empty
+	'''
+	if len(p) == 3:
+		p[0] = Node('block', [p[1], p[2]])
+	elif p[1]:
+		p[0] = p[1]
 
-precedence = (
-    ('right', 'ASSIGN'),
-    ('left', 'OR'),
-    ('left', 'AND'),
-    ('left', 'NOT'),
-    ('left', 'LESSTHAN', 'LESSEQUAL', 'EQUAL',
-     'NOTEQUAL', 'GREATEREQUAL', 'GREATER'),
-    ('left', 'PLUS', 'MINUS'),
-    ('left', 'MUL', 'DIV'),
-)
+def p_empty(p):
+	'''empty :
+	'''
+	pass
 
-def reviewBooleanExpression(expr):
-    if expr is None:
-        return None
+def p_stmt(p):
+	'''stmt : dcl
+			| assign
+			| cond
+			| while
+	'''
+	p[0] = p[1]
 
-    if type(expr) is str:
-        if len(expr) > 0:
-            return True
-        else:
-            return False
+def p_dcl(p):
+	'''dcl : type ID ';'
+		   | type ID '=' expr ';'
+	'''
+	if len(p) == 4:
+		p[0] = Node('dcl', [p[1], p[2]])
+	else:
+		p[0] = Node('dclassign', [p[1], p[2], p[4]])
 
-    if expr != 0:
-        return True
-    else:
-        return False
-
-def p_start(p):
-    '''
-    start : program
-    '''
-    pass
-
-def p_program(p):
-    ''' 
-    program : stmt program
-            | expr SEMI program
-            |
-    '''
-    pass
-
-def p_expr_binop(p):
-    '''
-    expr :           expr PLUS expr
-                   | expr MINUS expr
-                   | expr MUL expr
-                   | expr DIV expr
-    '''
-    if not stack[-1]:
-        return
-    try:
-        if p[2] == '+':
-            p[0] = p[1] + p[3]
-        elif p[2] == '-':
-            p[0] = p[1] - p[3]
-        elif p[2] == '*':
-            p[0] = p[1] * p[3]
-        elif p[2] == '/':
-            p[0] = p[1] / p[3]
-    except Exception as e:
-        raise(Exception('Error at binary operation'))
-
-def p_expr_id(p):
-    """
-    expr : ID
-    """
-    if not stack[-1]:
-        return
-
-    global variables
-    value = variables.get(p[1])
-    if value is not None:
-        p[0] = value
-        return value
-    else:
-        return None
+def p_type(p):
+	'''type : BOOL
+			| INT
+			| FLOAT
+			| STRING
+	'''
+	p[0] = p[1]
 
 def p_expr(p):
-    '''
-    expr : INT
-           | FLOAT
-           | BOOL
-           | STRING
-           | 
-    '''
-    if not stack[-1]:
-        return
-    p[0] = p[1]
+	'''expr : boolexpr
+			| numexpr
+			| strexpr
+	'''
+	p[0] = p[1]
 
-def p_expr_string(p):
-    '''
-    expr_string : STRING
-    '''
-    if not stack[-1]:
-            return
-    p[0] = p[1][1:-1]
+def p_boolexpr_bool(p):
+	'''boolexpr : '(' boolexpr ')'
+				| boolconst
+				| ID
+				| boolexpr boolop boolexpr
+				| ID boolop boolexpr
+	'''
+	if p[1] == '(':
+		p[0] = Node('bool', [p[2]])
+	elif len(p) == 2:
+		p[0] = Node('bool', [p[1]])
+	else:
+		p[0] = Node('boolop', [p[1], p[2], p[3]])
 
-def p_expr_id_assign_expr(p):
-    """
-    expr :  INTDECL ID ASSIGN expr
-            | FLOATDECL ID ASSIGN expr 
-            | BOOLDECL ID ASSIGN expr 
-            | STRINGDECL ID ASSIGN expr_string
-            | INTDECL ID ASSIGN expr SEMI 
-            | FLOATDECL ID ASSIGN expr SEMI 
-            | BOOLDECL ID ASSIGN expr SEMI
-            | STRINGDECL ID ASSIGN expr_string SEMI
-    """
-    if not stack[-1]:
-        return
-    global variables
-    if p[4] is not None:
-        variables[p[2]] = p[4]
-        p[1] = p[4]
+def p_boolexpr_num(p):
+	'''boolexpr : numexpr comp numexpr
+	'''
+	p[0] = Node('numcomp', [p[1], p[2], p[3]])
 
-def p_print_stmt(p):
-    """
-    stmt :  PRINT LPAREN ID RPAREN SEMI
-            | PRINT LPAREN STRING RPAREN SEMI
-    """
-    if not stack[-1]:
-        return
+def p_boolconst(p):
+	'''boolconst : TRUE
+				 | FALSE
+	'''
+	p[0] = p[1]
 
-    if p[3] is not None:
-        if(p[3] in variables):
-            print(variables[p[3]])
-        elif(type(p[3]) is str):
-            print(p[3])
-        else:
-            raise(Exception('Variable is not declared'))
+def p_comp(p):
+	'''comp : LESS_THAN
+			| LESS_EQUAL
+			| GREATER
+			| GREATER_EQUAL
+			| EQUAL
+			| NOT_EQUAL
+	'''
+	p[0] = p[1]
 
+def p_boolop(p):
+	'''boolop : AND
+			  | OR
+	'''
+	p[0] = p[1]
+
+def p_numexpr(p):
+	'''numexpr : '(' numexpr ')'
+			   | INT_CONST
+			   | FLOAT_CONST
+			   | ID
+			   | numexpr numop numexpr
+			   | ID numop numexpr 
+	'''
+	if p[1] == '(':
+		p[0] = Node('num', p[2])
+	if len(p) == 2:
+		p[0] = Node('num', p[1])
+	else:
+		p[0] = Node('numop', [p[1], p[2], p[3]])
+
+def p_numop(p):
+	'''numop : '+'
+			 | '-'
+			 | '*'
+			 | '/'
+			 | '^'
+	'''
+	p[0] = p[1]
+
+def p_strexpr(p):
+	'''strexpr : STRING_CONST
+			   | STRING '(' numexpr ')'
+			   | ID
+			   | strexpr '+' strexpr
+			   | ID '+' strexpr
+	'''
+	if len(p) == 4:
+		p[0] = Node('concat', [p[1], p[3]])
+	elif len(p) == 5:
+		p[0] = Node('strcast', [p[3]])
+	else:
+		p[0] = Node('str', [p[1]])
+
+def p_assign(p):
+	'''assign : ID '=' expr ';'
+	'''
+	p[0] = Node('assign', [p[1], p[3]])
+
+def p_cond(p):
+	'''cond : IF '(' boolexpr ')' '{' block '}' elifs else
+	'''
+	p[0] = Node('if', [p[3], p[6]])
+	if p[8]:
+		p[0].children.append(p[8])
+	if p[9]:
+		p[0].children.append(p[9])
+
+def p_elifs(p):
+	'''elifs : ELIF '(' boolexpr ')' '{' block '}' elifs
+			 | empty
+	'''
+	if len(p) > 2:
+		p[0] = Node('elif', [p[3], p[6]])
+		if p[8]:
+			p[0].children.append(p[8])
+
+def p_else(p):
+	'''else : ELSE '{' block '}'
+			| empty
+	'''
+	if len(p) > 2:
+		p[0] = Node('else', [p[3]])
+
+def p_while(p):
+	'''while : WHILE '(' boolexpr ')' '{' block '}'
+	'''
+	p[0] = Node('while', [p[3], p[6]])
 
 def p_error(p):
-    if p:
-        print(p)
-        raise(Exception("Syntax error at line '%s' character '%s'" %
-              (p.lineno, p.lexpos)))
-    else:
-        raise(Exception("Syntax error at EOF"))
+    raise(Exception(p))
 
 parser = yacc.yacc()
-
-# File input
-lines = []
-with open('test.txt') as file:
-    lines = file.readlines()
-
-for line in lines:
-    yacc.parse(line)
-print('Compiled successfully')
+resNode = parser.parse(lexer=lexer, input=open("test.txt").read())
+print("Compiled succesfully")
