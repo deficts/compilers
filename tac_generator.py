@@ -1,5 +1,6 @@
 from node import Node
 
+
 class TacGenerator:
     def __init__(self):
         self.var = -1
@@ -46,21 +47,25 @@ class TacGenerator:
             return self.gen_tac(c[0])
         if node.type == 'boolop':
             v = self.get_var()
-            self.write_line(v, '=', self.gen_tac(c[0]), c[1], self.gen_tac(c[2]))
+            self.write_line(v, '=', self.gen_tac(
+                c[0]), c[1], self.gen_tac(c[2]))
             return v
         if node.type == 'numcomp':
             v = self.get_var()
-            self.write_line(v, '=', self.gen_tac(c[0]), c[1], self.gen_tac(c[2]))
+            self.write_line(v, '=', self.gen_tac(
+                c[0]), c[1], self.gen_tac(c[2]))
             return v
         if node.type == 'num':
             return self.gen_tac(c)
         if node.type == 'numop':
             v = self.get_var()
-            self.write_line(v, '=', self.gen_tac(c[0]), c[1], self.gen_tac(c[2]))
+            self.write_line(v, '=', self.gen_tac(
+                c[0]), c[1], self.gen_tac(c[2]))
             return v
         if node.type == 'concat':
             v = self.get_var()
-            self.write_line(v, '=', self.gen_tac(c[0]), '+', self.gen_tac(c[1]))
+            self.write_line(v, '=', self.gen_tac(
+                c[0]), '+', self.gen_tac(c[1]))
             return v
         if node.type == 'strcast':
             v = self.get_var()
@@ -76,19 +81,21 @@ class TacGenerator:
                 label2 = self.get_label()
                 self.label_stack.append(label2)
 
-                self.write_line('if', 'false', self.gen_tac(c[0]), 'goto', label1)
+                self.write_line(
+                    'if', 'false', self.gen_tac(c[0]), 'goto', label1)
                 self.gen_tac(c[1])
                 self.write_line('goto', label2)
                 self.write_line(label1)
                 self.gen_tac(c[2])
                 self.gen_tac(c[3])
-                self.write_line(self.label_stack.pop())			
+                self.write_line(self.label_stack.pop())
             elif len(c) == 3:
                 label1 = self.get_label()
                 label2 = self.get_label()
                 self.label_stack.append(label2)
 
-                self.write_line('if', 'false', self.gen_tac(c[0]), 'goto', label1)
+                self.write_line(
+                    'if', 'false', self.gen_tac(c[0]), 'goto', label1)
                 self.gen_tac(c[1])
                 self.write_line('goto', label2)
                 self.write_line(label1)
@@ -96,20 +103,23 @@ class TacGenerator:
                 self.write_line(self.label_stack.pop())
             else:
                 label = self.get_label()
-                self.write_line('if', 'false', self.gen_tac(c[0]), 'goto', label)
+                self.write_line(
+                    'if', 'false', self.gen_tac(c[0]), 'goto', label)
                 self.gen_tac(c[1])
                 self.write_line(label)
         if node.type == 'elif':
             if len(c) == 3:
                 label = self.get_label()
-                self.write_line('if', 'false', self.gen_tac(c[0]), 'goto', label)
+                self.write_line(
+                    'if', 'false', self.gen_tac(c[0]), 'goto', label)
                 self.gen_tac(c[1])
                 self.write_line('goto', self.label_stack[-1])
                 self.write_line(label)
                 self.gen_tac(c[2])
             else:
                 label = self.get_label()
-                self.write_line('if', 'false', self.gen_tac(c[0]), 'goto', label)
+                self.write_line(
+                    'if', 'false', self.gen_tac(c[0]), 'goto', label)
                 self.gen_tac(c[1])
                 self.write_line('goto', self.label_stack[-1])
                 self.write_line(self.label)

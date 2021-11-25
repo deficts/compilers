@@ -1,26 +1,26 @@
 import ply.lex as lex
 
 reserved = (
-	'BOOL',
+    'BOOL',
     'INT',
     'FLOAT',
     'STRING',
-	'IF',
+    'IF',
     'ELIF',
     'ELSE',
     'WHILE',
-	'AND',
+    'AND',
     'OR',
-	'TRUE',
+    'TRUE',
     'FALSE',
 )
 
 tokens = reserved + (
-	'ID',
+    'ID',
     'INT_CONST',
     'FLOAT_CONST',
     'STRING_CONST',
-	'LESS_THAN',
+    'LESS_THAN',
     'LESS_EQUAL',
     'GREATER',
     'GREATER_EQUAL',
@@ -29,24 +29,26 @@ tokens = reserved + (
 )
 
 literals = [
-	'(',
+    '(',
     ')',
     '{',
     '}',
-	'+',
+    '+',
     '-',
     '*',
     '/',
     '^',
-	'=',
+    '=',
     ';',
 ]
 
 t_ignore = ' \t'
 
+
 def t_NEWLINE(t):
-	r'\n+'
-	t.lexer.lineno += t.value.count("\n")
+    r'\n+'
+    t.lexer.lineno += t.value.count("\n")
+
 
 t_LESS_THAN = r'<'
 t_GREATER = r'>'
@@ -60,18 +62,18 @@ t_STRING_CONST = r'\"([^\\\n]|(\\.))*?\"'
 
 reserved_map = {}
 for r in reserved:
-	reserved_map[r.lower()] = r
+    reserved_map[r.lower()] = r
+
 
 def t_ID(t):
-	r'[A-Za-z_][\w_]*'
-	t.type = reserved_map.get(t.value, "ID")
-	return t
+    r'[A-Za-z_][\w_]*'
+    t.type = reserved_map.get(t.value, "ID")
+    return t
+
 
 def t_error(t):
-	print("Illegal character %s" % repr(t.value[0]))
-	t.lexer.skip(1)
-
+    print("Illegal character %s" % repr(t.value[0]))
+    t.lexer.skip(1)
 
 
 lexer = lex.lex()
-
