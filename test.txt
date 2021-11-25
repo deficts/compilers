@@ -1,9 +1,21 @@
-int entero = 10;
-float flotante = 5.5;
-bool booleano = 0;
-string cadena = "hola";
+string name = "Diego";
+name = name + "Arredondo";
 
-print(entero);
-print(flotante);
-print(booleano);
-print(cadena);
+float x;
+float y = 10;
+
+bool b = false;
+
+if (x < y) {
+    b = true; 
+}
+
+int c = 0;
+float b = 1;
+while (b) {
+    c = c + 1;
+    b = b * c;
+    if (c == 100) {
+        b = false;
+    }
+}
